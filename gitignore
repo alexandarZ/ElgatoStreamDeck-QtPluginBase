@@ -1,5 +1,5 @@
 # Ignore project usr file 
-*.pro.usr
+*.pro.user*
 
 # Ignore build directory
 Build/*
