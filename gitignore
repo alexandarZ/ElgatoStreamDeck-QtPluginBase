@@ -1,0 +1,8 @@
+# Ignore project usr file 
+*.pro.usr
+
+# Ignore build directory
+Build/*
+
+# Ignore example plugin build files
+com.*
