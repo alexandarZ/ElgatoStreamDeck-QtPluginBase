@@ -10,17 +10,15 @@
 **/
 //==============================================================================
 
-#include <QString>
-#include <QJsonObject>
-#include "ElgatoStreamDeck/esdsdkdefines.h"
+#include "idatamodel.h"
 
-class ESDActionModel
+class ESDActionModel : IDataModel
 {
 public:
     ESDActionModel()  = default;
     ~ESDActionModel() = default;
 
-    void FromJsonObject(QJsonObject& json);
+    bool FromJson(QJsonObject& json);
 
     QString context,deviceId,event;
     QJsonObject payload;

@@ -12,49 +12,51 @@
 
 #include <QObject>
 #include <QWebSocket>
-#include <QJsonObject>
 #include <QJsonDocument>
-#include "ElgatoStreamDeck/esdsdkdefines.h"
 #include "ElgatoStreamDeck/esddevicemodel.h"
 #include "ElgatoStreamDeck/esdactionmodel.h"
+#include "ElgatoStreamDeck/esdpluginmodel.h"
+#include "ElgatoStreamDeck/esdeventmodel.h"
 
 #ifdef DEBUG
 #include <QDebug>
 #endif
 
-class ESDPlugin : public QObject
+class ESDPluginBase : public QObject
 {
     Q_OBJECT
 public:
-    explicit ESDPlugin(int& port,QString& pluginUUID, QString& registerEvent, QString& info,QObject *parent = nullptr);
-    ~ESDPlugin();
+    explicit ESDPluginBase(int& port,QString& pluginUUID, QString& registerEvent, QString& info,QObject *parent = nullptr);
+    explicit ESDPluginBase(ESDPluginModel& model,QObject* parent=nullptr);
 
-    bool Start();
-    bool Stop();
+    ~ESDPluginBase();
+
+    bool Connect();
+    bool Disconnect();
 
     bool IsDeviceConnected();
 
 private:
-    bool validateCmdArguments();
     void writeJSON(QJsonObject& jsonObject);
     bool parseMessage(QJsonObject& jsonObject);
 
 signals:
-    void DeviceConnected(QString& deviceId, QJsonObject& deviceInfo);
-    void DeviceDisconnected(QString& deviceId);
+    void DeviceDidConnect(QString& deviceId, QJsonObject& deviceInfo);
+    void DeviceDidDisconnect(QString& deviceId);
 
     void KeyDown(QString& context,QString& deviceId,QJsonObject& payload);
     void KeyUp(QString& context,QString& deviceId,QJsonObject& payload);
     void WillAppear(QString& context,QString& deviceId,QJsonObject& payload);
     void WillDisappear(QString& context,QString& deviceId,QJsonObject& payload);
     void TitleParametersDidChange(QString& context, QString& deviceId,QJsonObject& payload);
-    void ApplicationDidLaunch(QString& context, QString& deviceId,QJsonObject& payload);
-    void ApplicationDidTerminate(QString& context, QString& deviceId,QJsonObject& payload);
+    void ApplicationDidLaunch(QString& event,QJsonObject& payload);
+    void ApplicationDidTerminate(QString& event, QJsonObject& payload);
     void PropertyInspectorDidAppear(QString& context, QString& deviceId,QJsonObject& payload);
     void PropertyInspectorDidDisappear(QString& context, QString& deviceId,QJsonObject& payload);
     void SendToPlugin(QString& context, QString& deviceId,QJsonObject& payload);
     void DidReceiveSettings(QString& context, QString& deviceId,QJsonObject& payload);
     void DidReceiveGlobalSettings(QString& context, QString& deviceId,QJsonObject& payload);
+    void SystemDidWakeUp();
 
 public slots:
     void SetSettings(QJsonObject& settings, QString& context);
@@ -70,6 +72,7 @@ public slots:
     void SendToPropertyInspector(QString& action,QString& context,QJsonObject& payload);
     void SwitchProfile(QString& deviceId, QString& profileName);
     void LogMessage(QString& message);
+    void Cleanup(); //For closing connection before exiting in application
 
 private slots:
     void streamdeck_onConnected();
@@ -77,8 +80,7 @@ private slots:
     void streamdeck_onDataReceived(QString message);
 
 private:
-    int m_port;
-    QString m_pluginUUID,m_registerEvent,m_info;
+    ESDPluginModel m_plugin;
     QWebSocket m_websocket;
     ESDSDKDeviceType m_deviceType;
     QString m_deviceID;

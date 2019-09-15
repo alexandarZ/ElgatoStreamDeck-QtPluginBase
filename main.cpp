@@ -7,7 +7,7 @@
 void textMessageLogger(QtMsgType type, const QMessageLogContext &, const QString & msg)
 {
     QString txt;
-
+    QString timestamp = QDateTime::currentDateTime().toString("yyyyMMddHHmmss");
     switch (type)
     {
     case QtInfoMsg:
@@ -30,7 +30,7 @@ void textMessageLogger(QtMsgType type, const QMessageLogContext &, const QString
     QFile outFile("log");
     outFile.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream ts(&outFile);
-    ts << txt << endl;
+    ts << timestamp << " " << txt << endl;
 }
 
 int main(int argc, char *argv[])
@@ -59,18 +59,19 @@ int main(int argc, char *argv[])
     QString info = cmdParser.value(infoOption);
 
     // Start communication with streamdeck app
-    ESDPlugin esdPlugin(websocketPort,pluginUUID,registerEvent,info);
-    if(!esdPlugin.Start())
+    ESDPluginBase esdPlugin(websocketPort,pluginUUID,registerEvent,info);
+    if(!esdPlugin.Connect())
     {
        app.exit(1);
     }
 
     // Listen for stream deck events
     MyPlugin actionInstance;
-    actionInstance.connect(&esdPlugin,&ESDPlugin::WillAppear,&actionInstance,&MyPlugin::ESDWillAppear);
-    actionInstance.connect(&esdPlugin,&ESDPlugin::KeyDown,&actionInstance,&MyPlugin::ESDKeyDown);
-    actionInstance.connect(&esdPlugin,&ESDPlugin::KeyUp,&actionInstance,&MyPlugin::ESDKeyUp);
-    esdPlugin.connect(&actionInstance,&MyPlugin::SetActionTitle,&esdPlugin,&ESDPlugin::SetTitle);
+    actionInstance.connect(&esdPlugin,&ESDPluginBase::WillAppear,&actionInstance,&MyPlugin::ESDWillAppear);
+    actionInstance.connect(&esdPlugin,&ESDPluginBase::KeyDown,&actionInstance,&MyPlugin::ESDKeyDown);
+    actionInstance.connect(&esdPlugin,&ESDPluginBase::KeyUp,&actionInstance,&MyPlugin::ESDKeyUp);
+    actionInstance.connect(&esdPlugin,&ESDPluginBase::WillDisappear,&actionInstance,&MyPlugin::ESDWillDisappear);
+    esdPlugin.connect(&actionInstance,&MyPlugin::SetActionTitle,&esdPlugin,&ESDPluginBase::SetTitle);
 
     return app.exec();
 }

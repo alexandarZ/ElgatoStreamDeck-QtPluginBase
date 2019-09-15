@@ -15,6 +15,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     ElgatoStreamDeck/esdactionmodel.cpp \
+    ElgatoStreamDeck/esdeventmodel.cpp \
+    ElgatoStreamDeck/esdpluginmodel.cpp \
     MyPlugin/myplugin.cpp \
         main.cpp \
     ElgatoStreamDeck/esdplugin.cpp \
@@ -27,9 +29,12 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     ElgatoStreamDeck/esdactionmodel.h \
+    ElgatoStreamDeck/esdeventmodel.h \
     ElgatoStreamDeck/esdplugin.h \
+    ElgatoStreamDeck/esdpluginmodel.h \
     ElgatoStreamDeck/esdsdkdefines.h \
     ElgatoStreamDeck/esddevicemodel.h \
+    ElgatoStreamDeck/idatamodel.h \
     MyPlugin/myplugin.h
 
 CONFIG(debug, release|debug) {

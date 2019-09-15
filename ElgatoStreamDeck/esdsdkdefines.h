@@ -45,9 +45,9 @@
 #define kESDSDKEventTitleParametersDidChange		"titleParametersDidChange"
 #define kESDSDKEventDidReceiveSettings				"didReceiveSettings"
 #define kESDSDKEventDidReceiveGlobalSettings		"didReceiveGlobalSettings"
+#define kESDSDKEventSystemDidWakeUp                 "systemDidWakeUp"
 #define kESDSDKEventPropertyInspectorDidAppear		"propertyInspectorDidAppear"
 #define kESDSDKEventPropertyInspectorDidDisappear	"propertyInspectorDidDisappear"
-
 
 //
 // Functions

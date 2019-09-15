@@ -18,14 +18,15 @@ class MyPlugin : public QObject
     Q_OBJECT
 public:
     explicit MyPlugin(QObject *parent = nullptr);
+    ~MyPlugin() = default;
 
 signals:
     void SetActionTitle(QString& title, QString& context,ESDSDKTarget target);
-
 public slots:
     void ESDKeyDown(QString& context,QString& deviceId,QJsonObject& payload);
     void ESDKeyUp(QString& context,QString& deviceId,QJsonObject& payload);
     void ESDWillAppear(QString& context,QString& deviceId,QJsonObject& payload);
+    void ESDWillDisappear(QString& context, QString& deviceId,QJsonObject& payload);
 private:
     QString deviceId,context;
 };
