@@ -1,8 +1,11 @@
+#MacOS 
+.DS_Store
+
 # Ignore project usr file 
-*.pro.user*
+*.user*
 
 # Ignore build directory
-Build/*
+build/*
 
 # Ignore example plugin build files
 com.*
