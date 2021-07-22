@@ -1,0 +1,99 @@
+{
+  "Actions": [
+    {
+      "Icon": "Images/spotify_toggle_play_on_white", 
+      "Name": "Play/Pause", 
+      "States": [
+        {
+          "Image": "Images/btn_spotify_play",
+		  "Name": "Play"
+        }, 
+        {
+          "Image": "Images/btn_spotify_pause",
+		  "Name": "Pause"
+        }
+      ], 
+      "Tooltip": "Play/Pause on current device", 
+      "UUID": "com.elgato.spotify.play"
+    }, 
+	 {
+      "Icon": "Images/spotify_toggle_shuffle_on_white", 
+      "Name": "Toggle Shuffle", 
+      "States": [
+        {
+          "Image": "Images/btn_spotify_shuffle",
+		  "Name": "On"
+        }, 
+        {
+          "Image": "Images/btn_spotify_shuffle_off",
+		  "Name": "Off"
+        }
+      ], 
+      "Tooltip": "Toggle shuffle on current device", 
+      "UUID": "com.elgato.spotify.shuffle"
+    }, 
+    {
+      "Icon": "Images/spotify_next", 
+      "Name": "Next Track", 
+      "States": [
+        {
+          "Image": "Images/btn_spotify_next"
+        }
+      ], 
+      "Tooltip": "Play next track", 
+      "UUID": "com.elgato.spotify.next"
+    }, 
+    {
+      "Icon": "Images/spotify_prev", 
+      "Name": "Previous Track", 
+      "States": [
+        {
+          "Image": "Images/btn_spotify_prev"
+        }
+      ], 
+      "Tooltip": "Play previous track", 
+      "UUID": "com.elgato.spotify.previous"
+    }, 
+    {
+      "Icon": "Images/spotify_volume_white", 
+      "Name": "Volume", 
+      "States": [
+        {
+          "Image": "Images/btn_spotify_volume_up"
+        },
+		{
+		  "Image": "Images/btn_spotify_volume_down"
+        }
+      ], 
+      "Tooltip": "Change Spotify Volume", 
+      "UUID": "com.elgato.spotify.volume",
+      "PropertyInspectorPath": "propertyinspector/index.html",
+	  "SingleStateWithMultipleActionsIndexKey": "actionIdx"
+    }
+  ],
+  "SDKVersion": 2,
+  "Author": "Elgato", 
+  "CodePath": "Spotify", 
+  "Description": "Spotify integration", 
+  "Name": "Spotify", 
+  "Icon": "Images/btn_spotify_logo", 
+  "URL": "https://www.elgato.com/gaming/stream-deck", 
+  "Category": "Spotify",
+  "CategoryIcon": "Images/category_spotify",
+  "Version": "1.0.1",
+  "OS": [
+    {
+        "Platform": "mac", 
+        "MinimumVersion" : "10.11"
+    }
+  ],
+  "ApplicationsToMonitor": {
+  	"mac": [
+		"com.spotify.client"
+	]
+  },
+  "Software": 
+    {
+        "MinimumVersion" : "4.8"
+    }
+}

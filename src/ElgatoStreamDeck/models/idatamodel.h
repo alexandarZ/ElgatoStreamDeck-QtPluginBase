@@ -2,20 +2,28 @@
 #define IPLUGINMODEL_H
 
 #include <QJsonObject>
+#include <QJsonDocument>
 #include <QStringList>
 #include <QString>
-#include "ElgatoStreamDeck/esdsdkdefines.h"
+#include "../esdsdkdefines.h"
 
 class IDataModel
 {
 public:
     IDataModel() = default;
+
     virtual ~IDataModel() = default;
-    virtual bool FromJson(QJsonObject& json) {return false;}
-    virtual bool ToJson(QJsonObject& json) {return false;}
+
+    // Convert QJsonObject data into model
+    virtual void FromJson(const QJsonObject& json) { }
+
+    // Convert model into QJsonObject
+    virtual void ToJson(QJsonObject& json) { }
 
 protected:
-    bool containKeys(QJsonObject& json, QStringList& keyList)
+
+    // Check does QJsonObject contains keys from the list
+    bool containKeys(const QJsonObject& json, const QStringList& keyList)
     {
         foreach (QString key, keyList) {
             if(!json.contains(key))

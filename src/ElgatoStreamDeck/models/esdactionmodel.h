@@ -18,7 +18,7 @@ public:
     ESDActionModel()  = default;
     ~ESDActionModel() = default;
 
-    bool FromJson(QJsonObject& json);
+    void FromJson(const QJsonObject& json);
 
     QString context,deviceId,event;
     QJsonObject payload;

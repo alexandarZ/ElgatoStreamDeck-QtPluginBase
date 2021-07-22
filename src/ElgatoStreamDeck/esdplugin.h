@@ -11,12 +11,12 @@
 //==============================================================================
 
 #include <QObject>
-#include <QWebSocket>
+#include "esdconnection.h"
 #include <QJsonDocument>
-#include "ElgatoStreamDeck/esddevicemodel.h"
-#include "ElgatoStreamDeck/esdactionmodel.h"
-#include "ElgatoStreamDeck/esdpluginmodel.h"
-#include "ElgatoStreamDeck/esdeventmodel.h"
+#include "models/esddevicemodel.h"
+#include "models/esdactionmodel.h"
+#include "models/esdpluginmodel.h"
+#include "models/esdeventmodel.h"
 
 #ifdef DEBUG
 #include <QDebug>
@@ -26,18 +26,17 @@ class ESDPluginBase : public QObject
 {
     Q_OBJECT
 public:
-    explicit ESDPluginBase(int& port,QString& pluginUUID, QString& registerEvent, QString& info,QObject *parent = nullptr);
-    explicit ESDPluginBase(ESDPluginModel& model,QObject* parent=nullptr);
+    explicit ESDPluginBase(const ESDPluginModel& pluginData,QObject* parent=nullptr);
 
     ~ESDPluginBase();
 
-    bool Connect();
-    bool Disconnect();
+    void Connect();
+    void Disconnect();
 
     bool IsDeviceConnected();
+    bool IsPluginConnected();
 
 private:
-    void writeJSON(QJsonObject& jsonObject);
     bool parseMessage(QJsonObject& jsonObject);
 
 signals:
@@ -58,6 +57,12 @@ signals:
     void DidReceiveGlobalSettings(QString& context, QString& deviceId,QJsonObject& payload);
     void SystemDidWakeUp();
 
+    // Local signal to notify application that WS is closed
+    void ConnectionClosed();
+
+    // Local signal to notify application that WS is open
+    void ConnectionOpened();
+
 public slots:
     void SetSettings(QJsonObject& settings, QString& context);
     void SetGlobalSettings(QJsonObject& settings, QString& context);
@@ -72,16 +77,15 @@ public slots:
     void SendToPropertyInspector(QString& action,QString& context,QJsonObject& payload);
     void SwitchProfile(QString& deviceId, QString& profileName);
     void LogMessage(QString& message);
-    void Cleanup(); //For closing connection before exiting in application
 
 private slots:
-    void streamdeck_onConnected();
-    void streamdeck_onDisconnected();
-    void streamdeck_onDataReceived(QString message);
+    void connection_IsOpen();
+    void connection_IsClosed();
+    void connection_DataReceived(QJsonObject& json);
 
 private:
     ESDPluginModel m_plugin;
-    QWebSocket m_websocket;
+    CreativeDevLabs::ESDConnection m_websocketConnection;
     ESDSDKDeviceType m_deviceType;
     QString m_deviceID;
     bool m_deviceConnected;

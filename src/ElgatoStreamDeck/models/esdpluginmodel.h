@@ -18,12 +18,12 @@ class ESDPluginModel : IDataModel
 {
 public:
     ESDPluginModel() = default;
-    ESDPluginModel(int port,QString pluginUUID,QString registerEvent, QString info);
+    ESDPluginModel(int port, QString pluginUUID, QString registerEvent, QString info);
     ~ESDPluginModel() = default;
 
-    bool ValidateParameters();
-    bool FromJson(QJsonObject& json);
-    bool ToJson(QJsonObject& json);
+    void ValidateParameters();
+    void FromJson(const QJsonObject& json);
+    void ToJson(QJsonObject& json);
 
     int port;
     QString pluginUUID,registerEvent,info;

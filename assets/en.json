@@ -1,0 +1,45 @@
+{
+  "Description": "Qt Elgato Streamdeck plugin", 
+  "Name": "QtElagoStreamDeck", 
+  "com.elgato.spotify.play": {
+    "Name": "Play/Pause", 
+    "Tooltip": "Play/Pause on current device",
+    "States": [
+        {
+		  "Name": "Play"
+        }, 
+        {
+		  "Name": "Pause"
+        }
+      ]
+  },
+    "com.elgato.spotify.shuffle": {
+    "Name": "Toggle Shuffle", 
+    "Tooltip": "Toggle Shuffle on current device",
+    "States": [
+        {
+		  "Name": "On"
+        }, 
+        {
+		  "Name": "Off"
+        }
+      ]
+  },
+  "com.elgato.spotify.next": {
+    "Name": "Next Track", 
+    "Tooltip": "Play next track"
+  }, 
+  "com.elgato.spotify.previous": {
+    "Name": "Previous Track", 
+    "Tooltip": "Play previous track"
+  },
+  "com.elgato.spotify.volume": {
+    "Name": "Volume", 
+    "Tooltip": "Change Spotify Volume"
+    },
+    "Localization": {
+	"Volume Down": "Volume Down",
+	"Volume Up": "Volume Up",
+	"Action": "Action"
+  }
+}

@@ -2,6 +2,10 @@ QT += websockets
 CONFIG += c++17 console
 CONFIG -= app_bundle
 
+# Plugin info
+TARGET = QtElgatoStreamDeckPlugin
+VERSION = 1.0.0.0
+
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -14,27 +18,27 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    ElgatoStreamDeck/esdactionmodel.cpp \
-    ElgatoStreamDeck/esdeventmodel.cpp \
-    ElgatoStreamDeck/esdpluginmodel.cpp \
-    MyPlugin/myplugin.cpp \
-        main.cpp \
+    ElgatoStreamDeck/esdconnection.cpp \
     ElgatoStreamDeck/esdplugin.cpp \
-    ElgatoStreamDeck/esddevicemodel.cpp
+    ElgatoStreamDeck/models/esdactionmodel.cpp \
+    ElgatoStreamDeck/models/esddevicemodel.cpp \
+    ElgatoStreamDeck/models/esdeventmodel.cpp \
+    ElgatoStreamDeck/models/esdpluginmodel.cpp \
+    MyPlugin/myplugin.cpp \
+    main.cpp \
 
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    ElgatoStreamDeck/esdactionmodel.h \
-    ElgatoStreamDeck/esdeventmodel.h \
+    ElgatoStreamDeck/esdconnection.h \
     ElgatoStreamDeck/esdplugin.h \
-    ElgatoStreamDeck/esdpluginmodel.h \
     ElgatoStreamDeck/esdsdkdefines.h \
-    ElgatoStreamDeck/esddevicemodel.h \
-    ElgatoStreamDeck/idatamodel.h \
+    ElgatoStreamDeck/models/idatamodel.h \
+    ElgatoStreamDeck/models/esdactionmodel.h \
+    ElgatoStreamDeck/models/esddevicemodel.h \
+    ElgatoStreamDeck/models/esdeventmodel.h \
+    ElgatoStreamDeck/models/esdpluginmodel.h \
+    ElgatoStreamDeck/models/idatamodel.h \
     MyPlugin/myplugin.h
 
 CONFIG(debug, release|debug) {

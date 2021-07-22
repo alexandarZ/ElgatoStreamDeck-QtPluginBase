@@ -9,69 +9,51 @@ ESDPluginModel::ESDPluginModel(int port, QString pluginUUID, QString registerEve
     this->info = info;
 }
 
-bool ESDPluginModel::ValidateParameters()
+void ESDPluginModel::ValidateParameters()
 {
     // Check websocket port
     if(this->port <= 0)
     {
-#ifdef DEBUG
-        qDebug()<<"ESDPluginModel => ERROR: Websocket port can't be less than or equal 0!";
-#endif
-        return false;
+        throw std::runtime_error("ESDPluginModel => ERROR: Websocket port can't be less than or equal 0!");
     }
 
     // Check pluginUUID
     if(this->pluginUUID.isEmpty())
     {
-#ifdef DEBUG
-        qDebug()<<"ESDPluginModel => ERROR: PluginUUID can't be empty!";
-#endif
-        return false;
+        throw std::runtime_error("ESDPluginModel => ERROR: PluginUUID can't be empty!");
     }
 
     // Check registerEvent
     if(this->registerEvent.isEmpty())
     {
-#ifdef DEBUG
-        qDebug()<<"ESDPluginModel => ERROR: RegisterEvent can't be empty!";
-#endif
-        return false;
+        throw std::runtime_error("ESDPluginModel => ERROR: RegisterEvent can't be empty!");
     }
 
     // Check info
     if(this->info.isEmpty())
     {
-#ifdef DEBUG
-        qDebug()<<"ESDPluginModel => ERROR: Info can't be empty!";
-#endif
-        return false;
+        throw std::runtime_error("ESDPluginModel => ERROR: Info can't be empty!");
     }
-
-    return true;
 }
 
-bool ESDPluginModel::FromJson(QJsonObject &json)
+void ESDPluginModel::FromJson(const QJsonObject &json)
 {
     QStringList keyList = {"port","uuid","event","info"};
+
     if(!IDataModel::containKeys(json,keyList))
     {
-#ifdef DEBUG
-        qDebug()<<"ESDPluginModel => JSON does not contain valid keys!";
-#endif
-                  return false;
+        std::string jsonStr = QJsonDocument(json).toJson(QJsonDocument::Compact).toStdString();
+        throw std::runtime_error("ESDPluginModel => JSON \"" + jsonStr + "\" does not contain valid keys!");
     }
 
     this->port = json["port"].toInt();
     this->pluginUUID = json ["uuid"].toString();
     this->registerEvent = json["event"].toString();
     this->info = json["info"].toString();
-
-    return true;
 }
 
-bool ESDPluginModel::ToJson(QJsonObject &json)
+void ESDPluginModel::ToJson(QJsonObject &json)
 {
     json["uuid"] = this->pluginUUID;
     json["event"] = this->registerEvent;
-    return true;
 }

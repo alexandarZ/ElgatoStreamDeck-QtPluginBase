@@ -1,65 +1,37 @@
 #include "esdplugin.h"
 
-ESDPluginBase::ESDPluginBase(int &port, QString &pluginUUID, QString &registerEvent, QString &info, QObject *parent) : QObject(parent)
+ESDPluginBase::ESDPluginBase(const ESDPluginModel& pluginData, QObject* parent) : QObject(parent)
 {
- // Initialize plugin
- this->m_plugin = ESDPluginModel(port,pluginUUID,registerEvent,info);
-
- // Initialize device informations
- this->m_deviceType = kESDSDKDeviceType_StreamDeck; // By default device is StreamDeck
- this->m_deviceID = "UnknownID";
- this->m_deviceConnected = false; // By default device is not connected
+    m_plugin = pluginData;
+    m_deviceType = kESDSDKDeviceType_StreamDeck;
+    m_deviceID = "UnknownID";
+    m_deviceConnected = false;
 
 #ifdef DEBUG
-    qDebug()<<"ESDPluginBase => Websocket port: "<<port;
-    qDebug()<<"ESDPluginBase => Plugin UUID: "<<pluginUUID;
-    qDebug()<<"ESDPluginBase => RegisterEvent: "<<registerEvent;
-    qDebug()<<"ESDPluginBase => Info: "<<info;
+    qDebug()<<"ESDPluginBase => Websocket port: "<< m_plugin.port;
+    qDebug()<<"ESDPluginBase => Plugin UUID: "<< m_plugin.pluginUUID;
+    qDebug()<<"ESDPluginBase => RegisterEvent: "<< m_plugin.registerEvent;
+    qDebug()<<"ESDPluginBase => Info: "<< m_plugin.info;
 #endif
+
+    connect(&m_websocketConnection, &CreativeDevLabs::ESDConnection::ConnectionOpened, this, &ESDPluginBase::connection_IsOpen);
+    connect(&m_websocketConnection, &CreativeDevLabs::ESDConnection::ConnectionClosed, this, &ESDPluginBase::connection_IsClosed);
+    connect(&m_websocketConnection, &CreativeDevLabs::ESDConnection::DataReceived, this, &ESDPluginBase::connection_DataReceived);
 }
 
 ESDPluginBase::~ESDPluginBase()
 {
-    this->Disconnect();
+    m_websocketConnection.Disconnect();
+
+    disconnect(&m_websocketConnection, &CreativeDevLabs::ESDConnection::ConnectionOpened, this, &ESDPluginBase::connection_IsOpen);
+    disconnect(&m_websocketConnection, &CreativeDevLabs::ESDConnection::ConnectionClosed, this, &ESDPluginBase::connection_IsClosed);
+    disconnect(&m_websocketConnection, &CreativeDevLabs::ESDConnection::DataReceived, this, &ESDPluginBase::connection_DataReceived);
 }
 
-bool ESDPluginBase::Connect()
+void ESDPluginBase::Connect()
 {
-    // Validate command line arguments
-    if(!this->m_plugin.ValidateParameters())
-    {
-        return false;
-    }
-
-    m_websocket.open("ws://localhost:"+QString::number(m_plugin.port));
-
-    if(m_websocket.isValid())
-    {
-        return false;
-    }
-
-    connect(&m_websocket,&QWebSocket::connected,this,&ESDPluginBase::streamdeck_onConnected);
-    connect(&m_websocket,&QWebSocket::disconnected,this,&ESDPluginBase::streamdeck_onDisconnected);
-
-    return true;
-}
-
-bool ESDPluginBase::Disconnect()
-{
-    if(m_websocket.isValid())
-    {
-#ifdef DEBUG
-    qDebug()<<"ESDPluginBase => Communication is closed!";
-#endif
-        disconnect(&m_websocket, &QWebSocket::textMessageReceived, this, &ESDPluginBase::streamdeck_onDataReceived);
-        disconnect(&m_websocket,&QWebSocket::connected,this,&ESDPluginBase::streamdeck_onConnected);
-        disconnect(&m_websocket,&QWebSocket::disconnected,this,&ESDPluginBase::streamdeck_onDisconnected);
-
-        m_websocket.close(QWebSocketProtocol::CloseCodeNormal,"Normal exit");
-        return true;
-    }
-
-    return false;
+    m_plugin.ValidateParameters();
+    m_websocketConnection.Connect("ws://localhost:"+QString::number(m_plugin.port));
 }
 
 bool ESDPluginBase::IsDeviceConnected()
@@ -67,61 +39,31 @@ bool ESDPluginBase::IsDeviceConnected()
     return m_deviceConnected;
 }
 
-// ------ COMMUNICATION --------
-
-void ESDPluginBase::writeJSON(QJsonObject &jsonObject)
+bool ESDPluginBase::IsPluginConnected()
 {
-    QJsonDocument doc(jsonObject);
-    QString jsonStr(doc.toJson(QJsonDocument::Compact));
-
-#ifdef DEBUG
-    qInfo()<<"ESDPluginBase => WriteJSON: "<<jsonStr;
-#endif
-
-    m_websocket.sendTextMessage(jsonStr);
+    return m_websocketConnection.IsConnectionOpen();
 }
 
-void ESDPluginBase::streamdeck_onConnected()
+// ------ CONNECTION --------
+
+void ESDPluginBase::connection_IsOpen()
 {
-#ifdef DEBUG
-    qDebug()<<"ESDPluginBase => WebSocket is open!";
-#endif
-
-    connect(&m_websocket, &QWebSocket::textMessageReceived, this, &ESDPluginBase::streamdeck_onDataReceived);
-
     // Register plugin
     QJsonObject pluginRegisterData;
     m_plugin.ToJson(pluginRegisterData);
-    writeJSON(pluginRegisterData);
+    m_websocketConnection.WriteMessage(pluginRegisterData);
+
+    emit ConnectionOpened();
 }
 
-void ESDPluginBase::streamdeck_onDisconnected()
+void ESDPluginBase::connection_IsClosed()
 {
-#ifdef DEBUG
-    qDebug()<<"ESDPluginBase => Websocket is closed! Close reason: "<<m_websocket.closeReason();
-#endif
-    disconnect(&m_websocket, &QWebSocket::textMessageReceived, this, &ESDPluginBase::streamdeck_onDataReceived);
-    disconnect(&m_websocket,&QWebSocket::connected,this,&ESDPluginBase::streamdeck_onConnected);
-    disconnect(&m_websocket,&QWebSocket::disconnected,this,&ESDPluginBase::streamdeck_onDisconnected);
+    emit ConnectionClosed();
 }
 
-void ESDPluginBase::streamdeck_onDataReceived(QString message)
+void ESDPluginBase::connection_DataReceived(QJsonObject &json)
 {
-#ifdef DEBUG
-    qDebug()<<"ESDPluginBase => Received JSON: "<<message;
-#endif
-
-    QJsonDocument jsonMessage = QJsonDocument::fromJson(message.toUtf8());
-    QJsonObject jsonMessagObject = jsonMessage.object();
-
-    bool messageOk = parseMessage(jsonMessagObject);
-
-#ifdef DEBUG
-    if(!messageOk)
-    {
-        qDebug()<<"ESDPluginBase => Could not parse received message!";
-    }
-#endif
+    parseMessage(json);
 }
 
 bool ESDPluginBase::parseMessage(QJsonObject &jsonObject)
@@ -266,12 +208,7 @@ void ESDPluginBase::LogMessage(QString &message)
     payload[kESDSDKPayloadMessage] = message;
     jsonObject[kESDSDKCommonPayload] = payload;
 
-    writeJSON(jsonObject);
-}
-
-void ESDPluginBase::Cleanup()
-{
-    this->Disconnect();
+    m_websocketConnection.WriteMessage(jsonObject);
 }
 
 void ESDPluginBase::SwitchProfile(QString &deviceId, QString &profileName)
@@ -286,7 +223,7 @@ void ESDPluginBase::SwitchProfile(QString &deviceId, QString &profileName)
     payload[kESDSDKPayloadProfile]   = profileName;
     jsonObject[kESDSDKCommonPayload] = payload;
 
-    writeJSON(jsonObject);
+    m_websocketConnection.WriteMessage(jsonObject);
 }
 
 void ESDPluginBase::SendToPropertyInspector(QString &action, QString &context, QJsonObject &payload)
@@ -298,7 +235,7 @@ void ESDPluginBase::SendToPropertyInspector(QString &action, QString &context, Q
     jsonObject[kESDSDKCommonAction]  = action;
     jsonObject[kESDSDKCommonPayload] = payload;
 
-    writeJSON(jsonObject);
+    m_websocketConnection.WriteMessage(jsonObject);
 }
 
 void ESDPluginBase::SetState(int &state, QString &context)
@@ -312,7 +249,7 @@ void ESDPluginBase::SetState(int &state, QString &context)
     jsonObject[kESDSDKCommonContext] = context;
     jsonObject[kESDSDKCommonPayload] = payload;
 
-    writeJSON(jsonObject);
+    m_websocketConnection.WriteMessage(jsonObject);
 }
 
 void ESDPluginBase::SetTitle(QString &title, QString& context, ESDSDKTarget target)
@@ -327,7 +264,7 @@ void ESDPluginBase::SetTitle(QString &title, QString& context, ESDSDKTarget targ
     payload[kESDSDKPayloadTitle] = title;
     jsonObject[kESDSDKCommonPayload] = payload;
 
-    writeJSON(jsonObject);
+    m_websocketConnection.WriteMessage(jsonObject);
 }
 
 void ESDPluginBase::SetImage(QString &base64Str, QString& context,ESDSDKTarget target)
@@ -351,7 +288,7 @@ void ESDPluginBase::SetImage(QString &base64Str, QString& context,ESDSDKTarget t
     }
 
     jsonObject[kESDSDKCommonPayload] = payload;
-    writeJSON(jsonObject);
+    m_websocketConnection.WriteMessage(jsonObject);
 }
 
 void ESDPluginBase::ShowAlert(QString &context)
@@ -361,7 +298,7 @@ void ESDPluginBase::ShowAlert(QString &context)
     jsonObject[kESDSDKCommonEvent]   = kESDSDKEventShowAlert;
     jsonObject[kESDSDKCommonContext] = context;
 
-    writeJSON(jsonObject);
+    m_websocketConnection.WriteMessage(jsonObject);
 }
 
 void ESDPluginBase::ShowOk(QString &context)
@@ -371,7 +308,7 @@ void ESDPluginBase::ShowOk(QString &context)
     jsonObject[kESDSDKCommonEvent] = kESDSDKEventShowOK;
     jsonObject[kESDSDKCommonContext] = context;
 
-    writeJSON(jsonObject);
+    m_websocketConnection.WriteMessage(jsonObject);
 }
 
 void ESDPluginBase::SetSettings(QJsonObject &settings, QString &context)
@@ -382,7 +319,7 @@ void ESDPluginBase::SetSettings(QJsonObject &settings, QString &context)
     jsonObject[kESDSDKCommonContext] = context;
     jsonObject[kESDSDKCommonPayload] = settings;
 
-    writeJSON(jsonObject);
+    m_websocketConnection.WriteMessage(jsonObject);
 }
 
 void ESDPluginBase::SetGlobalSettings(QJsonObject &settings, QString &context)
@@ -393,7 +330,7 @@ void ESDPluginBase::SetGlobalSettings(QJsonObject &settings, QString &context)
     jsonObject[kESDSDKCommonContext] = context;
     jsonObject[kESDSDKCommonPayload] = settings;
 
-    writeJSON(jsonObject);
+    m_websocketConnection.WriteMessage(jsonObject);
 }
 
 void ESDPluginBase::GetSettings(QString &context)
@@ -402,7 +339,7 @@ void ESDPluginBase::GetSettings(QString &context)
    jsonObject[kESDSDKCommonEvent] = kESDSDKEventGetSettings;
    jsonObject[kESDSDKCommonContext] = context;
 
-   writeJSON(jsonObject);
+   m_websocketConnection.WriteMessage(jsonObject);
 }
 
 void ESDPluginBase::GetGlobalSettings(QJsonObject &context)
@@ -411,7 +348,7 @@ void ESDPluginBase::GetGlobalSettings(QJsonObject &context)
     jsonObject[kESDSDKCommonEvent] = kESDSDKEventGetGlobalSettings;
     jsonObject[kESDSDKCommonContext] = context;
 
-    writeJSON(jsonObject);
+    m_websocketConnection.WriteMessage(jsonObject);
 }
 
 void ESDPluginBase::OpenURL(QString &url)
@@ -424,6 +361,6 @@ void ESDPluginBase::OpenURL(QString &url)
     jsonObject[kESDSDKCommonEvent] = kESDSDKEventOpenURL;
     jsonObject[kESDSDKCommonPayload] = payload;
 
-    writeJSON(jsonObject);
+    m_websocketConnection.WriteMessage(jsonObject);
 }
 

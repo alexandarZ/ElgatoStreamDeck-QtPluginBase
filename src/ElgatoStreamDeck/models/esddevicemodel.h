@@ -18,7 +18,7 @@ public:
     ESDDeviceModel()  = default;
     ~ESDDeviceModel() = default;
 
-    bool FromJson(QJsonObject& json);
+    void FromJson(const QJsonObject& json);
 
     QString event,deviceId;
     QJsonObject deviceInfo;

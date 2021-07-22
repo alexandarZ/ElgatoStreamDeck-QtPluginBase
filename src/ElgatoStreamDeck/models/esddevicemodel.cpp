@@ -1,6 +1,6 @@
 #include "esddevicemodel.h"
 
-bool ESDDeviceModel::FromJson(QJsonObject &json)
+void ESDDeviceModel::FromJson(const QJsonObject &json)
 {
     this->deviceId = json["device"].toString();
     this->event = json["event"].toString();
@@ -9,6 +9,4 @@ bool ESDDeviceModel::FromJson(QJsonObject &json)
     {
         QJsonObject deviceInfo = json["deviceInfo"].toObject();
     }
-
-    return true;
 }

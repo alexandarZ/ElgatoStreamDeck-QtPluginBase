@@ -9,7 +9,7 @@ public:
     ESDEventModel() = default;
     ~ESDEventModel() = default;
 
-    bool FromJson(QJsonObject& json);
+    void FromJson(const QJsonObject& json);
 
     QString event;
     QJsonObject payload;
